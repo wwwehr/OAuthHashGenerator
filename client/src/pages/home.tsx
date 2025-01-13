@@ -24,14 +24,10 @@ export default function Home() {
   });
 
   const hashMutation = useMutation({
-    mutationFn: async (pin: string) => {
-      const res = await fetch('/api/hash', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pin }),
-      });
-      if (!res.ok) throw new Error('Failed to generate hash');
-      return res.json();
+    mutationFn: (pin: string) => {
+      if (!user) throw new Error('User not authenticated');
+      const hash = generateHash(pin, user);
+      return Promise.resolve({ hash });
     },
     onSuccess: () => {
       toast({

@@ -1,3 +1,6 @@
+
+import crypto from 'crypto-js';
+
 export interface User {
   sub: string;
   iss: string;
@@ -14,4 +17,13 @@ export async function getUser(): Promise<User | null> {
   } catch (err) {
     return null;
   }
+}
+
+export function generateHash(pin: string, user: User): string {
+  // Create hash using HMAC-SHA256 on client side
+  const hmac = crypto.HmacSHA256(
+    user.sub + user.iss + user.aud,
+    pin
+  );
+  return hmac.toString();
 }
