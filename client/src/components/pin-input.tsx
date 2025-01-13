@@ -14,6 +14,7 @@ export default function PinInput({ value, onChange, onComplete }: PinInputProps)
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (value.length >= 4) {
+      console.log(`on complete: ${value}`)
       onComplete(value);
     }
   };

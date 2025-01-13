@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SiGoogle } from "react-icons/si";
@@ -6,26 +6,27 @@ import PinInput from "@/components/pin-input";
 import HashDisplay from "@/components/hash-display";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { generateHash } from "@/lib/auth";
 
 export default function Home() {
   const [pin, setPin] = useState<string>("");
   const { toast } = useToast();
 
   const { data: user } = useQuery<{ sub: string; iss: string; aud: string }>({
-    queryKey: ['/api/auth/user'],
+    queryKey: ["/api/auth/user"],
     retry: false,
     enabled: true,
   });
 
   const loginMutation = useMutation({
     mutationFn: async () => {
-      window.location.href = '/api/auth/google';
+      window.location.href = "/api/auth/google";
     },
   });
 
   const hashMutation = useMutation({
     mutationFn: (pin: string) => {
-      if (!user) throw new Error('User not authenticated');
+      if (!user) throw new Error("User not authenticated");
       const hash = generateHash(pin, user);
       return Promise.resolve({ hash });
     },
@@ -57,23 +58,29 @@ export default function Home() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {!user ? (
-            <Button 
-              className="w-full" 
-              onClick={() => loginMutation.mutate()}
-              disabled={loginMutation.isPending}
-            >
-              <SiGoogle className="mr-2 h-4 w-4" />
-              Sign in with Google
-            </Button>
-          ) : (
-            <>
-              <PinInput value={pin} onChange={setPin} onComplete={handlePinSubmit} />
-              {hashMutation.data && (
-                <HashDisplay hash={hashMutation.data.hash} />
-              )}
-            </>
-          )}
+          {!user
+            ? (
+              <Button
+                className="w-full"
+                onClick={() => loginMutation.mutate()}
+                disabled={loginMutation.isPending}
+              >
+                <SiGoogle className="mr-2 h-4 w-4" />
+                Sign in with Google
+              </Button>
+            )
+            : (
+              <>
+                <PinInput
+                  value={pin}
+                  onChange={setPin}
+                  onComplete={handlePinSubmit}
+                />
+                {hashMutation.data && (
+                  <HashDisplay hash={hashMutation.data.hash} />
+                )}
+              </>
+            )}
         </CardContent>
       </Card>
     </div>
