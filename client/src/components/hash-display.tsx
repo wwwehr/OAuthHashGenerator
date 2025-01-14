@@ -3,7 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
-import { generateNillionVMSKeyPair, VMSClient } from "@nillion/client-vms";
+import type { VmClient } from "@nillion/client-vms";
+import {
+  createClient,
+  getKeplr,
+} from "@nillion/client-react-hooks";
 
 interface HashDisplayProps {
   hash: string;
@@ -11,27 +15,25 @@ interface HashDisplayProps {
 
 export default function HashDisplay({ hash }: HashDisplayProps) {
   const { toast } = useToast();
-  const [keys, setKeys] = useState<{ publicKey: Uint8Array; privateKey: Uint8Array } | null>(null);
-  const [client, setClient] = useState<VMSClient | null>(null);
+  const [keys, setKeys] = useState<
+    { publicKey: Uint8Array; privateKey: Uint8Array } | null
+  >(null);
+  const [client, setClient] = useState<VmClient | null>(null);
 
   useEffect(() => {
     const setupNillion = async () => {
       try {
-        const encoder = new TextEncoder();
-        const seedBytes = encoder.encode(hash);
-        const [publicKey, privateKey] = await generateNillionVMSKeyPair(seedBytes);
-        
-        const vmsClient = new VMSClient({
-          nodeUrls: ["https://proxy.nillion.com"],
-          userPublicKey: publicKey,
-        });
-        
-        await vmsClient.initialize();
-        
-        setKeys({ publicKey, privateKey });
-        setClient(vmsClient);
+        const init = async () => {
+          const vmsClient = await createClient({
+            network: "testnet",
+            seed: hash,
+            keplr: await getKeplr(),
+          });
+          setClient(client);
+        };
+        void init();
       } catch (error) {
-        console.error('Nillion setup error:', error);
+        console.error("Nillion setup error:", error);
         toast({
           title: "Error",
           description: "Failed to initialize Nillion",
